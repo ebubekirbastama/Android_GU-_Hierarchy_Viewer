@@ -1,77 +1,146 @@
 # 📱 AndroidHierarchyViewer
 
-Modern ve görsel Android UI Hierarchy Viewer aracı.
-`uiautomator2` kullanarak bağlı Android cihazdan canlı XML dump alır, ekran görüntüsü oluşturur ve UI elementlerini görsel olarak işaretler.
+### 🌍 Languages
+
+- 🇸🇦 العربية
+- 🇺🇸 [English](README_EN.md)
+- 🇹🇷 [Türkçe](README_TR.md)
+
+# 📱 AndroidHierarchyViewer
+
+أداة حديثة لعرض وتحليل Android UI Hierarchy باستخدام `uiautomator2`.
+
+مستوحاة من نظام Chrome DevTools Inspect.
 
 ---
 
-# 🚀 Özellikler
+# 🚀 المميزات
 
-* ✅ Android cihazdan canlı UI XML dump alma
-* ✅ Otomatik ekran görüntüsü alma
-* ✅ XML verisini TreeView şeklinde görselleştirme
-* ✅ Telefon ekranı üzerinde element sınırlarını çizme
-* ✅ Ham XML görüntüleme
-* ✅ XML dump'ı otomatik `.txt` olarak kaydetme
-* ✅ Modern Dark/Metro UI
-* ✅ PyQt6 tabanlı profesyonel arayüz
-* ✅ Bounds parsing sistemi
-* ✅ XML clipboard kopyalama
-* ✅ Scroll destekli telefon ekran önizleme sistemi
-
----
-
-# 🖼️ Görünüm
-
-## Sol Panel
-
-* XML Tree Structure
-* Ham XML görüntüsü
-
-## Sağ Panel
-
-* Gerçek telefon ekranı
-* UI element bounding box çizimleri
+* ✅ استخراج XML مباشر من جهاز Android
+* ✅ التقاط Screenshot تلقائي
+* ✅ عرض XML Tree بشكل مرئي
+* ✅ رسم حدود العناصر فوق الشاشة
+* ✅ نظام Hover Inspect مباشر
+* ✅ اختيار العناصر بالضغط
+* ✅ مزامنة XML مع العرض المرئي
+* ✅ عرض Raw XML
+* ✅ حفظ XML تلقائياً
+* ✅ واجهة Dark / Metro حديثة
+* ✅ واجهة احترافية باستخدام PyQt6
+* ✅ نظام Bounds Parsing
+* ✅ نسخ XML إلى Clipboard
+* ✅ معاينة شاشة الهاتف مع Scroll
+* ✅ وضع التحديث المباشر Live Refresh
 
 ---
 
-# 📦 Kullanılan Teknolojiler
+# 🧠 نظام Inspect
 
-| Teknoloji       | Açıklama                |
-| --------------- | ----------------------- |
-| Python          | Ana programlama dili    |
-| PyQt6           | Modern masaüstü GUI     |
-| uiautomator2    | Android UI dump sistemi |
-| XML ElementTree | XML parsing             |
-| QPainter        | Bounds çizim sistemi    |
+الأداة تعمل بطريقة مشابهة لـ Chrome DevTools.
+
+يمكنك:
+
+* فحص العناصر مباشرة
+* تحليل واجهات Android
+* اختيار العناصر بصرياً
+* مزامنة XML مع الشاشة
+* تمييز العناصر داخل Raw XML
 
 ---
 
-# ⚙️ Gereksinimler
+# 🖱️ Hover Inspect
+
+عند تمرير الماوس فوق العنصر:
+
+* يظهر إطار أخضر
+* يتم عرض:
+
+  * Class
+  * Text
+  * Resource ID
+  * Clickable
+  * Enabled
+  * Bounds
+
+---
+
+# 🎯 اختيار العناصر
+
+عند الضغط على عنصر:
+
+* يظهر إطار أحمر
+* يتم تحديد XML Node تلقائياً
+* يتم الانتقال داخل TreeView
+* يتم تمييز العنصر داخل Raw XML
+
+---
+
+# 📡 وضع التحديث المباشر
+
+يدعم مراقبة UI بشكل مباشر.
+
+المميزات:
+
+* تحديث XML تلقائي
+* تحديث Screenshot تلقائي
+* تحليل UI لحظي
+* مراقبة hierarchy مباشرة
+
+---
+
+# 🖼️ نظام Overlay للشاشة
+
+يقوم البرنامج بعرض:
+
+* Screenshot حقيقي للهاتف
+* حدود العناصر
+* Overlay rendering system
+
+باستخدام:
+
+* QGraphicsScene
+* QGraphicsRectItem
+* QGraphicsPixmapItem
+
+---
+
+# 📦 التقنيات المستخدمة
+
+| التقنية         | الوصف              |
+| --------------- | ------------------ |
+| Python          | اللغة الأساسية     |
+| PyQt6           | واجهة رسومية حديثة |
+| uiautomator2    | Android Automation |
+| XML ElementTree | XML Parsing        |
+| QPainter        | Overlay Rendering  |
+
+---
+
+# ⚙️ المتطلبات
 
 ## Python
 
-* Python 3.10+
+Python 3.10+
 
 ## Android
 
-* USB Debugging açık olmalı
-* ADB kurulu olmalı
+* تفعيل USB Debugging
+* تثبيت ADB
 
 ---
 
-# 🔌 Kurulum
+# 📦 التثبيت
 
-## 1) Repo'yu Klonla
+## Clone Repository
 
 ```bash
 git clone https://github.com/ebubekirbastama/Android_GU-_Hierarchy_Viewer.git
-cd AndroidHierarchyViewer
+cd Android_GU-_Hierarchy_Viewer
 ```
 
 ---
 
-## 2) Gereksinimleri Kur
+## تثبيت المتطلبات
 
 ```bash
 pip install -r requirements.txt
@@ -79,17 +148,22 @@ pip install -r requirements.txt
 
 ---
 
-## 3) Android Cihazı Bağla
+# 📜 requirements.txt
 
-ADB cihazını kontrol et:
+```txt
+PyQt6>=6.6.0
+uiautomator2>=3.1.0
+```
+
+اختياري:
 
 ```bash
-adb devices
+pip install adbutils lxml pillow
 ```
 
 ---
 
-## 4) Uygulamayı Başlat
+# ▶️ التشغيل
 
 ```bash
 python AndroidHierarchyViewer.py
@@ -97,99 +171,55 @@ python AndroidHierarchyViewer.py
 
 ---
 
-# 📜 requirements.txt
+# 🧪 الأنظمة المجربة
 
-```txt
-PyQt6
-uiautomator2
-```
-
----
-
-# 📱 Nasıl Çalışır?
-
-Program:
-
-1. Android cihaza bağlanır
-2. XML hierarchy dump alır
-3. Telefon ekran görüntüsünü kaydeder
-4. XML içindeki bounds değerlerini parse eder
-5. Telefon ekranı üzerine kırmızı kutular çizer
-6. XML yapısını TreeView içinde gösterir
+| النظام     | الحالة |
+| ---------- | ------ |
+| Windows 10 | ✅      |
+| Windows 11 | ✅      |
 
 ---
 
-# 🧠 XML Bounds Örneği
+# 🔥 مميزات مستقبلية
 
-```xml
-bounds="[0,120][1080,240]"
-```
-
-Program bunu otomatik olarak:
-
-```python
-x1, y1, x2, y2
-```
-
-şeklinde parse ederek ekrana çizer.
+* XPath Generator
+* CSS Selector Generator
+* دعم عدة أجهزة
+* AI Selector Generator
+* OCR Analysis
+* Element Screenshot Crop
+* Live Tap Inspector
+* Search System
 
 ---
 
-# 📸 Otomatik Kayıt Sistemi
+# 🔬 مجالات الاستخدام
 
-Her dump işleminde otomatik oluşturulur:
-
-```bash
-dump_xxxxx.txt
-screenshot_xxxxx.png
-```
-
-UUID tabanlı random isim sistemi kullanılır.
-
----
-
-# 🛠️ Desteklenen Özellikler
-
-| Özellik                  | Durum |
-| ------------------------ | ----- |
-| XML Dump                 | ✅     |
-| Screenshot               | ✅     |
-| Bounds Visualization     | ✅     |
-| Tree Structure           | ✅     |
-| Dark Theme               | ✅     |
-| Clipboard Copy           | ✅     |
-| Scrollable Phone Preview | ✅     |
+* Android Automation
+* Reverse Engineering
+* UI Analysis
+* Mobile Testing
+* Accessibility Testing
+* Bot Development
+* Mobile Scraping
+* Dynamic Selector Extraction
 
 ---
 
-# 🔥 Gelecek Özellikler
+# 📄 الترخيص
 
-* [ ] Canlı element seçimi
-* [ ] Tıklayınca elementi highlight etme
-* [ ] XPath generator
-* [ ] CSS selector generator
-* [ ] Search sistemi
-* [ ] Multi-device support
-* [ ] Screenshot zoom
-* [ ] Element inspector panel
-* [ ] Auto-refresh mode
+Apache License 2.0
 
 ---
 
-# 🧪 Test Edilen Ortamlar
+# ❤️ ملاحظة المطور
 
-| Sistem     | Durum |
-| ---------- | ----- |
-| Windows 10 | ✅     |
-| Windows 11 | ✅     |
+يهدف هذا المشروع إلى توفير:
 
----
+* واجهة حديثة
+* نظام Inspect مباشر
+* Overlay Rendering احترافي
+* تجربة مشابهة لـ Chrome DevTools
 
-# ⚠️ Notlar
+لتحليل واجهات Android وأتمتتها.
 
-* Telefon ekranı açık olmalıdır
-* USB debugging aktif olmalıdır
-* Bazı üretici ROM'larında ek izin gerekebilir
-
----
-# ❤️ Android Automation & Reverse Engineering Tools
