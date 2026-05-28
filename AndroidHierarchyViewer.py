@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QTextEdit, QLabel, QMessageBox,
     QTreeWidget, QTreeWidgetItem, QSplitter,
     QGraphicsView, QGraphicsScene, QGraphicsRectItem,
-    QGraphicsPixmapItem
+    QGraphicsPixmapItem, QFrame
 )
 
 from PyQt6.QtGui import (
@@ -56,80 +56,116 @@ class UIDumpGUI(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("📱 EBS Android XML Inspect Viewer")
-        self.setGeometry(80, 60, 1750, 950)
+        self.setWindowTitle("📱 EBS Android XML Inspect Viewer + XPath Generator")
+        self.setGeometry(60, 40, 1900, 1000)
 
         self.device = None
         self.selected_graphics_item = None
         self.hover_graphics_item = None
+        self.current_root = None
+        self.current_xpath_text = ""
 
         self.live_timer = QTimer()
         self.live_timer.timeout.connect(self.live_refresh)
 
         self.setStyleSheet("""
             QWidget {
-                background-color: #1e1e2f;
+                background-color: #151521;
                 color: #ffffff;
                 font-family: Segoe UI;
             }
 
+            QLabel {
+                font-size: 13pt;
+                font-weight: 600;
+            }
+
             QPushButton {
-                background-color: #0078d7;
+                background-color: #1677ff;
                 color: white;
-                border-radius: 6px;
-                padding: 10px;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 14px;
                 font-size: 13px;
+                font-weight: 600;
             }
 
             QPushButton:hover {
-                background-color: #005a9e;
+                background-color: #0f5fc8;
+            }
+
+            QPushButton:pressed {
+                background-color: #084a9f;
             }
 
             QTextEdit {
-                background-color: #252535;
-                color: #ffffff;
-                border-radius: 6px;
+                background-color: #202033;
+                color: #e8e8f0;
+                border: 1px solid #34344d;
+                border-radius: 10px;
                 font-family: Consolas;
                 font-size: 10pt;
-                padding: 8px;
+                padding: 10px;
+                selection-background-color: #1677ff;
             }
 
             QTreeWidget {
-                background-color: #252535;
+                background-color: #202033;
                 color: #ffffff;
-                border-radius: 6px;
+                border: 1px solid #34344d;
+                border-radius: 10px;
                 font-family: Consolas;
                 font-size: 9pt;
             }
 
             QTreeWidget::item:selected {
-                background-color: #0078d7;
+                background-color: #1677ff;
                 color: white;
             }
 
-            QLabel {
-                font-size: 14pt;
+            QHeaderView::section {
+                background-color: #292943;
+                color: #ffffff;
+                padding: 6px;
+                border: none;
+                font-weight: 700;
             }
 
             QGraphicsView {
-                background-color: #111111;
-                border: 1px solid #444;
-                border-radius: 8px;
+                background-color: #09090f;
+                border: 1px solid #3a3a55;
+                border-radius: 12px;
+            }
+
+            QSplitter::handle {
+                background-color: #30304a;
+            }
+
+            QFrame#card {
+                background-color: #1b1b2b;
+                border: 1px solid #34344d;
+                border-radius: 14px;
             }
         """)
 
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(12, 12, 12, 12)
+        main_layout.setSpacing(10)
         self.setLayout(main_layout)
 
-        title = QLabel("Android XML Viewer - Chrome Inspect Element Gibi")
+        title = QLabel("Android XML Viewer - Inspect + uiautomator2 XPath Üretici")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("font-size: 18pt; font-weight: 800; color: #ffffff;")
         main_layout.addWidget(title)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         main_layout.addWidget(splitter)
 
-        left_panel = QWidget()
+        # SOL PANEL
+        left_panel = QFrame()
+        left_panel.setObjectName("card")
         left_layout = QVBoxLayout()
+        left_layout.setContentsMargins(10, 10, 10, 10)
         left_panel.setLayout(left_layout)
 
         left_layout.addWidget(QLabel("XML Ağaç Yapısı"))
@@ -148,30 +184,69 @@ class UIDumpGUI(QWidget):
         self.tree.setColumnWidth(1, 180)
         self.tree.setColumnWidth(2, 260)
         self.tree.setColumnWidth(3, 240)
-        left_layout.addWidget(self.tree)
+        left_layout.addWidget(self.tree, 2)
 
         left_layout.addWidget(QLabel("Ham XML"))
 
         self.text_area = QTextEdit()
         self.text_area.setReadOnly(True)
-        left_layout.addWidget(self.text_area)
+        left_layout.addWidget(self.text_area, 1)
 
-        right_panel = QWidget()
-        right_layout = QVBoxLayout()
-        right_panel.setLayout(right_layout)
+        # ORTA PANEL
+        middle_panel = QFrame()
+        middle_panel.setObjectName("card")
+        middle_layout = QVBoxLayout()
+        middle_layout.setContentsMargins(10, 10, 10, 10)
+        middle_panel.setLayout(middle_layout)
 
-        right_layout.addWidget(QLabel("Canlı Telefon Ekranı - Inspect Modu"))
+        middle_layout.addWidget(QLabel("Canlı Telefon Ekranı - Inspect Modu"))
 
         self.preview_scene = QGraphicsScene()
         self.preview_view = InspectGraphicsView(self)
         self.preview_view.setScene(self.preview_scene)
         self.preview_view.setMouseTracking(True)
+        middle_layout.addWidget(self.preview_view)
 
-        right_layout.addWidget(self.preview_view)
+        # SAĞ PANEL - XPATH
+        right_panel = QFrame()
+        right_panel.setObjectName("card")
+        right_layout = QVBoxLayout()
+        right_layout.setContentsMargins(10, 10, 10, 10)
+        right_panel.setLayout(right_layout)
+
+        xpath_title = QLabel("⚡ XPath Kombinasyonları")
+        xpath_title.setStyleSheet("font-size: 15pt; font-weight: 800; color: #6ee7ff;")
+        right_layout.addWidget(xpath_title)
+
+        self.selected_info_area = QTextEdit()
+        self.selected_info_area.setReadOnly(True)
+        self.selected_info_area.setMaximumHeight(185)
+        self.selected_info_area.setPlaceholderText("Bir elemente tıkla; özellikleri burada görünecek.")
+        right_layout.addWidget(self.selected_info_area)
+
+        self.xpath_area = QTextEdit()
+        self.xpath_area.setReadOnly(True)
+        self.xpath_area.setPlaceholderText(
+            "Ekrandaki elemente tıkladığında uiautomator2 için kullanılabilecek XPath kombinasyonları burada anlık listelenecek."
+        )
+        right_layout.addWidget(self.xpath_area, 1)
+
+        xpath_button_layout = QHBoxLayout()
+
+        self.copy_xpath_button = QPushButton("📋 XPath Kopyala")
+        self.copy_xpath_button.clicked.connect(self.copy_xpath_text)
+        xpath_button_layout.addWidget(self.copy_xpath_button)
+
+        self.clear_xpath_button = QPushButton("🧹 XPath Temizle")
+        self.clear_xpath_button.clicked.connect(self.clear_xpath_panel)
+        xpath_button_layout.addWidget(self.clear_xpath_button)
+
+        right_layout.addLayout(xpath_button_layout)
 
         splitter.addWidget(left_panel)
+        splitter.addWidget(middle_panel)
         splitter.addWidget(right_panel)
-        splitter.setSizes([1000, 750])
+        splitter.setSizes([720, 760, 520])
 
         button_layout = QHBoxLayout()
 
@@ -244,6 +319,7 @@ class UIDumpGUI(QWidget):
     def process_device_state(self, device, save_files=False, show_message=False):
         dump_text = device.dump_hierarchy()
         root = ET.fromstring(dump_text)
+        self.current_root = root
 
         screenshot_path = self.save_screenshot(device)
 
@@ -387,7 +463,7 @@ class UIDumpGUI(QWidget):
         self.hover_graphics_item = item
 
         if item and item != self.selected_graphics_item:
-            item.setPen(QPen(QColor("#00ff00"), 3))
+            item.setPen(QPen(QColor("#00ff90"), 3))
             item.setBrush(QBrush(Qt.BrushStyle.NoBrush))
 
             xml_node = item.xml_data
@@ -398,10 +474,12 @@ class UIDumpGUI(QWidget):
             bounds = xml_node.attrib.get("bounds", "")
             clickable = xml_node.attrib.get("clickable", "")
             enabled = xml_node.attrib.get("enabled", "")
+            content_desc = xml_node.attrib.get("content-desc", "")
 
             tooltip = (
                 f"Class: {class_name}\n"
                 f"Text: {text}\n"
+                f"Content Desc: {content_desc}\n"
                 f"Resource ID: {resource_id}\n"
                 f"Clickable: {clickable}\n"
                 f"Enabled: {enabled}\n"
@@ -420,7 +498,7 @@ class UIDumpGUI(QWidget):
             except Exception:
                 pass
 
-        graphics_item.setPen(QPen(QColor("#ff0000"), 4))
+        graphics_item.setPen(QPen(QColor("#ff4d4f"), 4))
         graphics_item.setBrush(QBrush(Qt.BrushStyle.NoBrush))
         self.selected_graphics_item = graphics_item
 
@@ -433,6 +511,7 @@ class UIDumpGUI(QWidget):
 
         bounds = xml_node.attrib.get("bounds", "")
         self.find_in_raw_xml(bounds)
+        self.update_xpath_panel(xml_node)
 
     def find_tree_item_by_node(self, xml_node):
         def search_item(item):
@@ -473,6 +552,303 @@ class UIDumpGUI(QWidget):
 
         self.text_area.setTextCursor(cursor)
 
+    # -------------------------
+    # XPATH GENERATOR HELPERS
+    # -------------------------
+    def xpath_quote(self, value):
+        """XPath string quote helper. Handles apostrophe/double-quote safely."""
+        if value is None:
+            return "''"
+        value = str(value)
+        if "'" not in value:
+            return f"'{value}'"
+        if '"' not in value:
+            return f'"{value}"'
+
+        parts = value.split("'")
+        return "concat(" + ", \"'\", ".join([f"'{part}'" for part in parts]) + ")"
+
+    def get_parent_map(self):
+        if self.current_root is None:
+            return {}
+        return {child: parent for parent in self.current_root.iter() for child in parent}
+
+    def get_node_index_among_same_class(self, node, parent_map):
+        parent = parent_map.get(node)
+        class_name = node.attrib.get("class", "")
+
+        if parent is None:
+            return 1
+
+        same = [child for child in list(parent) if child.attrib.get("class", "") == class_name]
+
+        if node in same:
+            return same.index(node) + 1
+
+        return 1
+
+    def get_node_index_among_same_tag(self, node, parent_map):
+        parent = parent_map.get(node)
+
+        if parent is None:
+            return 1
+
+        same = [child for child in list(parent) if child.tag == node.tag]
+
+        if node in same:
+            return same.index(node) + 1
+
+        return 1
+
+    def get_absolute_xpath(self, node, use_class=True):
+        parent_map = self.get_parent_map()
+        parts = []
+        current = node
+
+        while current is not None:
+            class_name = current.attrib.get("class", "")
+            tag_name = current.tag
+
+            if use_class and class_name:
+                index = self.get_node_index_among_same_class(current, parent_map)
+                parts.append(f"{class_name}[{index}]")
+            else:
+                index = self.get_node_index_among_same_tag(current, parent_map)
+                parts.append(f"{tag_name}[{index}]")
+
+            current = parent_map.get(current)
+
+        parts.reverse()
+        return "/" + "/".join(parts)
+
+    def get_short_hierarchy_xpath(self, node):
+        """Creates a shorter but still hierarchical XPath using last 3 meaningful class segments."""
+        parent_map = self.get_parent_map()
+        chain = []
+        current = node
+
+        while current is not None:
+            class_name = current.attrib.get("class", "")
+            if class_name:
+                index = self.get_node_index_among_same_class(current, parent_map)
+                chain.append(f"{class_name}[{index}]")
+            current = parent_map.get(current)
+
+        chain.reverse()
+        tail = chain[-3:] if len(chain) >= 3 else chain
+        return "//" + "/".join(tail)
+
+    def add_xpath(self, results, title, xpath, priority=""):
+        if not xpath:
+            return
+        key = xpath.strip()
+        if not key:
+            return
+        if key in {item[1] for item in results}:
+            return
+        label = f"{title}{' - ' + priority if priority else ''}"
+        results.append((label, key))
+
+    def generate_xpath_combinations(self, node):
+        attr = node.attrib
+        results = []
+
+        class_name = attr.get("class", "")
+        text = attr.get("text", "")
+        resource_id = attr.get("resource-id", "")
+        content_desc = attr.get("content-desc", "")
+        bounds = attr.get("bounds", "")
+        package = attr.get("package", "")
+        clickable = attr.get("clickable", "")
+        enabled = attr.get("enabled", "")
+        selected = attr.get("selected", "")
+        checked = attr.get("checked", "")
+        index = attr.get("index", "")
+
+        base = f"//{class_name}" if class_name else f"//{node.tag}"
+        any_node = "//*"
+
+        # En stabil kombinasyonlar
+        if resource_id:
+            self.add_xpath(results, "resource-id", f"//*[@resource-id={self.xpath_quote(resource_id)}]", "en stabil")
+            if class_name:
+                self.add_xpath(results, "class + resource-id", f"//{class_name}[@resource-id={self.xpath_quote(resource_id)}]", "önerilen")
+
+        if content_desc:
+            self.add_xpath(results, "content-desc", f"//*[@content-desc={self.xpath_quote(content_desc)}]", "erişilebilirlik")
+            if class_name:
+                self.add_xpath(results, "class + content-desc", f"//{class_name}[@content-desc={self.xpath_quote(content_desc)}]")
+
+        if text:
+            self.add_xpath(results, "text", f"//*[@text={self.xpath_quote(text)}]", "metin birebir")
+            self.add_xpath(results, "text contains", f"//*[contains(@text, {self.xpath_quote(text[:25])})]")
+            if class_name:
+                self.add_xpath(results, "class + text", f"//{class_name}[@text={self.xpath_quote(text)}]")
+                self.add_xpath(results, "class + text contains", f"//{class_name}[contains(@text, {self.xpath_quote(text[:25])})]")
+
+        # Kombine güçlü seçenekler
+        if resource_id and text:
+            self.add_xpath(
+                results,
+                "resource-id + text",
+                f"//*[@resource-id={self.xpath_quote(resource_id)} and @text={self.xpath_quote(text)}]",
+                "çok güçlü"
+            )
+
+        if resource_id and content_desc:
+            self.add_xpath(
+                results,
+                "resource-id + content-desc",
+                f"//*[@resource-id={self.xpath_quote(resource_id)} and @content-desc={self.xpath_quote(content_desc)}]"
+            )
+
+        if text and content_desc:
+            self.add_xpath(
+                results,
+                "text + content-desc",
+                f"//*[@text={self.xpath_quote(text)} and @content-desc={self.xpath_quote(content_desc)}]"
+            )
+
+        if class_name and resource_id and text:
+            self.add_xpath(
+                results,
+                "class + resource-id + text",
+                f"//{class_name}[@resource-id={self.xpath_quote(resource_id)} and @text={self.xpath_quote(text)}]",
+                "en net"
+            )
+
+        # Android XML attribute seçenekleri
+        if class_name:
+            self.add_xpath(results, "class", f"//{class_name}")
+
+        if package:
+            self.add_xpath(results, "package", f"//*[@package={self.xpath_quote(package)}]")
+            if class_name:
+                self.add_xpath(results, "class + package", f"//{class_name}[@package={self.xpath_quote(package)}]")
+
+        if bounds:
+            self.add_xpath(results, "bounds", f"//*[@bounds={self.xpath_quote(bounds)}]", "ekran konumu")
+            if class_name:
+                self.add_xpath(results, "class + bounds", f"//{class_name}[@bounds={self.xpath_quote(bounds)}]")
+
+        if index != "":
+            self.add_xpath(results, "index", f"//*[@index={self.xpath_quote(index)}]")
+            if class_name:
+                self.add_xpath(results, "class + index", f"//{class_name}[@index={self.xpath_quote(index)}]")
+
+        if clickable:
+            self.add_xpath(results, "clickable", f"{base}[@clickable={self.xpath_quote(clickable)}]")
+
+        if enabled:
+            self.add_xpath(results, "enabled", f"{base}[@enabled={self.xpath_quote(enabled)}]")
+
+        if selected:
+            self.add_xpath(results, "selected", f"{base}[@selected={self.xpath_quote(selected)}]")
+
+        if checked:
+            self.add_xpath(results, "checked", f"{base}[@checked={self.xpath_quote(checked)}]")
+
+        # Parent/child hiyerarşi XPath'leri
+        parent_map = self.get_parent_map()
+        parent = parent_map.get(node)
+        if parent is not None:
+            parent_class = parent.attrib.get("class", "")
+            parent_rid = parent.attrib.get("resource-id", "")
+            parent_text = parent.attrib.get("text", "")
+            parent_desc = parent.attrib.get("content-desc", "")
+
+            child_selector = class_name if class_name else node.tag
+
+            if parent_rid:
+                self.add_xpath(
+                    results,
+                    "parent resource-id -> child class",
+                    f"//*[@resource-id={self.xpath_quote(parent_rid)}]//{child_selector}",
+                    "hiyerarşik"
+                )
+
+            if parent_class:
+                self.add_xpath(
+                    results,
+                    "parent class -> child class",
+                    f"//{parent_class}//{child_selector}",
+                    "hiyerarşik"
+                )
+
+            if parent_text:
+                self.add_xpath(
+                    results,
+                    "parent text -> child class",
+                    f"//*[@text={self.xpath_quote(parent_text)}]//{child_selector}"
+                )
+
+            if parent_desc:
+                self.add_xpath(
+                    results,
+                    "parent content-desc -> child class",
+                    f"//*[@content-desc={self.xpath_quote(parent_desc)}]//{child_selector}"
+                )
+
+        # Mutlak ve kısa hiyerarşik path
+        self.add_xpath(results, "absolute class path", self.get_absolute_xpath(node, use_class=True), "son çare")
+        self.add_xpath(results, "absolute tag path", self.get_absolute_xpath(node, use_class=False), "son çare")
+        self.add_xpath(results, "short hierarchy path", self.get_short_hierarchy_xpath(node), "pratik")
+
+        # uiautomator2 Python örnekleri
+        wrapped = []
+        for title, xpath in results:
+            wrapped.append((title, xpath))
+            wrapped.append((f"uiautomator2 kullanım - {title}", f"d.xpath({self.xpath_quote(xpath)}).click()"))
+
+        return wrapped
+
+    def update_xpath_panel(self, xml_node):
+        attr = xml_node.attrib
+
+        info = (
+            "SEÇİLEN ELEMENT\n"
+            "────────────────────────\n"
+            f"Tag          : {xml_node.tag}\n"
+            f"Class        : {attr.get('class', '')}\n"
+            f"Text         : {attr.get('text', '')}\n"
+            f"Content Desc : {attr.get('content-desc', '')}\n"
+            f"Resource ID  : {attr.get('resource-id', '')}\n"
+            f"Package      : {attr.get('package', '')}\n"
+            f"Clickable    : {attr.get('clickable', '')}\n"
+            f"Enabled      : {attr.get('enabled', '')}\n"
+            f"Index        : {attr.get('index', '')}\n"
+            f"Bounds       : {attr.get('bounds', '')}\n"
+        )
+        self.selected_info_area.setPlainText(info)
+
+        combinations = self.generate_xpath_combinations(xml_node)
+
+        lines = []
+        lines.append("UIAUTOMATOR2 XPATH KOMBİNASYONLARI")
+        lines.append("Not: Önce resource-id / content-desc / text kombinasyonlarını dene. Bounds ve absolute path son çaredir.")
+        lines.append("═" * 72)
+
+        for i, (title, xpath) in enumerate(combinations, start=1):
+            lines.append(f"\n{i:02d}) {title}")
+            lines.append(xpath)
+
+        self.current_xpath_text = "\n".join(lines)
+        self.xpath_area.setPlainText(self.current_xpath_text)
+
+    def copy_xpath_text(self):
+        text = self.xpath_area.toPlainText().strip()
+        if not text:
+            QMessageBox.information(self, "Bilgi", "Kopyalanacak XPath yok. Önce bir elemente tıkla.")
+            return
+
+        QApplication.clipboard().setText(text)
+        QMessageBox.information(self, "Kopyalandı", "XPath kombinasyonları clipboard'a kopyalandı.")
+
+    def clear_xpath_panel(self):
+        self.selected_info_area.clear()
+        self.xpath_area.clear()
+        self.current_xpath_text = ""
+
     def copy_text(self):
         clipboard = QApplication.clipboard()
         clipboard.setText(self.text_area.toPlainText())
@@ -493,6 +869,8 @@ class UIDumpGUI(QWidget):
         self.preview_scene.clear()
         self.selected_graphics_item = None
         self.hover_graphics_item = None
+        self.current_root = None
+        self.clear_xpath_panel()
 
 
 if __name__ == "__main__":
