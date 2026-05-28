@@ -6,6 +6,12 @@
 - 🇺🇸 [English](README_EN.md)
 - 🇹🇷 [Türkçe](README_TR.md)
 
+- # 🖼️ لقطة شاشة
+
+الصورة التالية توضح واجهة برنامج AndroidHierarchyViewer أثناء تحليل واجهة تطبيق Android:
+
+![AndroidHierarchyViewer Screenshot](11.png)
+
 # 📱 AndroidHierarchyViewer
 
 أداة حديثة لعرض وتحليل Android UI Hierarchy باستخدام `uiautomator2`.
