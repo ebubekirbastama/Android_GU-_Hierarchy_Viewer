@@ -192,26 +192,4 @@ UUID tabanlı random isim sistemi kullanılır.
 * Bazı üretici ROM'larında ek izin gerekebilir
 
 ---
-
-# 👨‍💻 Geliştirici
-
-Developed by Ebubekir Bastama
-
-GitHub:
-https://github.com/ebubekirbastama
-
----
-
-# ⭐ Katkıda Bulun
-
-Pull request gönderebilir veya issue açabilirsiniz.
-
----
-
-# 📄 Lisans
-
-MIT License
-
----
-
 # ❤️ Android Automation & Reverse Engineering Tools
